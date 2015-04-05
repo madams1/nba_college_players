@@ -5,8 +5,8 @@ require(magrittr)
 require(stringr)
 
 # functions for getting player data
-source("input/scripts/01_get_draft_tables.R")
-source("input/scripts/02_get_player_attributes.R")
+source("01_get_draft_tables.R")
+source("02_get_player_attributes.R")
 
 # get 25 years worth of career NBA stats for collegiate athletes drafted
 nba_draft_stats <- lapply(1982:2006, getCollegiateDrafted) %>%
