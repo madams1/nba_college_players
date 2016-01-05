@@ -3,15 +3,17 @@
 getCollegiateDrafted <- function(y) {
     
     # get the draft page for the year y
-    draft_tree <- html(paste0("http://www.basketball-reference.com/draft/NBA_", y, ".html"))
+    draft_tree <- read_html(paste0("http://www.basketball-reference.com/draft/NBA_", y, ".html"))
     
     # get hrefs from the table -- html_table() doesn't preserve the hrefs
-    player_rows <- draft_tree %>% html_nodes(xpath = "//tbody/tr/td[4]") %>% html_node("a")
-    missing_link_rows <- which(sapply(player_rows, is.null)) # rows with missing links
-    player_links <- draft_tree %>% html_nodes(xpath = "//tbody/tr/td[4]/a/@href") %>% as.character # rows with player links
+    player_rows <- draft_tree %>% html_nodes(xpath = "//tbody/tr/td[4]")
+#     missing_link_rows <- which(sapply(player_rows, is.na)) # rows with missing links
+#     player_links <- draft_tree %>% html_nodes(xpath = "//tbody/tr/td[4]/a/@href") %>% as.character # rows with player links
+    
+    player_links <- player_rows %>% str_extract("href.*html") %>% str_replace_all("href=\"", "")
     
     # hacky way of interleaving the missing values with the rows with links
-    for (i in missing_link_rows) player_links %<>% append(NA, i - 1) # create vector of links to ncaa page
+    # for (i in missing_link_rows) player_links %<>% append(NA, i - 1) # create vector of links to ncaa page
     
     # get the data from the table in a dataframe
     draft_table <- draft_tree %>%
@@ -22,7 +24,7 @@ getCollegiateDrafted <- function(y) {
     colnames(draft_table) <- c(draft_table[2, 1:7],
                                paste0(draft_table[2, 8:14], "_overall"),
                                paste0(draft_table[2, 15:18], "_per_game"),
-                               draft_table[2, 19:20]) %>%
+                               draft_table[2, 19:22]) %>%
         sapply(as.vector) %>%
         str_replace_all("\\%", "_perc") %>%
         str_replace("\\/", "_") %>% tolower
